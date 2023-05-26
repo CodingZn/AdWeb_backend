@@ -132,4 +132,61 @@ public class UserController {
 
     }
 
+    @RequestMapping(value = "/user/{id}", method = RequestMethod.GET)
+    public Object getUserInfo(@RequestHeader(name = "Authorization") String token, @PathVariable String id){
+        int tid = JWTToken.verify(token).getClaims().get("id").asInt();
+        if (tid != Integer.parseInt(id)){
+            System.out.println(tid);
+            System.out.println(id);
+            return new ResponseEntity<Object>(new MessageResponse("您无权限操作！"), HttpStatus.UNAUTHORIZED);
+        }
+
+        SqlSession sqlSession;
+        try {
+            sqlSession = SqlSessionLoader.getSqlSession();
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Object>(new MessageResponse("服务器错误！"), HttpStatus.valueOf(500));
+        }
+
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        User result = userMapper.findUserInfoById(tid);
+
+        if(result == null){
+            sqlSession.close();
+            return new ResponseEntity<Object>(new MessageResponse("用户不存在！"), HttpStatus.NOT_FOUND);
+        }
+
+//        System.out.println(user.toString());
+
+        sqlSession.close();
+        return new ResponseEntity<Object>(result, HttpStatus.OK);
+
+    }
+
+    @RequestMapping(value = "/checkUsername", method = RequestMethod.GET)
+    public Object checkUsername(@RequestParam String username){
+        SqlSession sqlSession;
+        try {
+            sqlSession = SqlSessionLoader.getSqlSession();
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Object>(new MessageResponse("服务器错误！"), HttpStatus.valueOf(500));
+        }
+
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        User result = userMapper.findUserByUsername(username);
+
+        if(result != null){
+            sqlSession.close();
+            return new ResponseEntity<Object>(new MessageResponse("用户名已被占用！"), HttpStatus.BAD_REQUEST);
+        }
+
+//        System.out.println(user.toString());
+
+        sqlSession.close();
+        return new ResponseEntity<Object>(new MessageResponse("用户名可用！"), HttpStatus.OK);
+
+    }
+
 }
