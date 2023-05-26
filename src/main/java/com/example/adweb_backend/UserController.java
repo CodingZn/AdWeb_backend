@@ -3,6 +3,7 @@ package com.example.adweb_backend;
 import com.example.adweb_backend.mybatis.SqlSessionLoader;
 import com.example.adweb_backend.mybatis.po.Auth;
 import com.example.adweb_backend.mybatis.po.User;
+import com.example.adweb_backend.request.LoginRequest;
 import com.example.adweb_backend.response.ErrorResponse;
 import com.example.adweb_backend.util.JWTToken;
 import com.example.adweb_backend.util.PBKDF2;
@@ -27,16 +28,19 @@ public class UserController {
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public Object login(@RequestBody String username, @RequestBody String password){
-        SqlSession sqlSession;
+    public @ResponseBody Object login(@RequestBody LoginRequest request) throws IOException {
+        SqlSession sqlSession= SqlSessionLoader.getSqlSession();
         try {
             sqlSession = SqlSessionLoader.getSqlSession();
         }catch (IOException e){
-            System.out.println(e.getMessage());
+            System.out.println(e);
             return new ResponseEntity<Object>(new ErrorResponse("服务器错误！"), HttpStatus.valueOf(500));
         }
 
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+
+        String username = request.getUsername(); System.out.println(username);
+        String password = request.getPassword(); System.out.println(password);
 
         User result = userMapper.findUserByUsername(username);
         if (result == null){
@@ -78,7 +82,7 @@ public class UserController {
     }
 
 
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @RequestMapping(value = "/login8", method = RequestMethod.POST)
     public Object t5(@RequestBody User user){
         try {
             SqlSession sqlSession = SqlSessionLoader.getSqlSession();
