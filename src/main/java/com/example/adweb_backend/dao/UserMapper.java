@@ -1,12 +1,15 @@
 package com.example.adweb_backend.dao;
 
-import com.example.adweb_backend.mybatis.po.Auth;
 import com.example.adweb_backend.mybatis.po.User;
+import org.apache.ibatis.annotations.Mapper;
 
-@org.apache.ibatis.annotations.Mapper
+@Mapper
 public interface UserMapper {
     User findUserById(int id);
 
     User findUserByUsername(String username);
-    Auth findUserAuthByAuthid(int authid);
+
+    int createUser(User user);
+
+    int updateUser(User user);
 }

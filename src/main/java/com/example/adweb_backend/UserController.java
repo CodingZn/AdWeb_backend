@@ -1,12 +1,15 @@
 package com.example.adweb_backend;
 
 import com.example.adweb_backend.mybatis.SqlSessionLoader;
-import com.example.adweb_backend.mybatis.po.Auth;
+
 import com.example.adweb_backend.mybatis.po.User;
 import com.example.adweb_backend.request.LoginRequest;
-import com.example.adweb_backend.response.ErrorResponse;
+import com.example.adweb_backend.request.RegisterRequest;
+import com.example.adweb_backend.response.MessageResponse;
 import com.example.adweb_backend.util.JWTToken;
 import com.example.adweb_backend.util.PBKDF2;
+
+import jakarta.validation.Valid;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,37 +31,32 @@ public class UserController {
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public @ResponseBody Object login(@RequestBody LoginRequest request) throws IOException {
-        SqlSession sqlSession= SqlSessionLoader.getSqlSession();
+    public @ResponseBody Object login(@RequestBody @Valid LoginRequest request) {
+        SqlSession sqlSession;
         try {
             sqlSession = SqlSessionLoader.getSqlSession();
         }catch (IOException e){
             System.out.println(e);
-            return new ResponseEntity<Object>(new ErrorResponse("服务器错误！"), HttpStatus.valueOf(500));
+            return new ResponseEntity<Object>(new MessageResponse("服务器错误！"), HttpStatus.valueOf(500));
         }
 
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
 
-        String username = request.getUsername(); System.out.println(username);
-        String password = request.getPassword(); System.out.println(password);
+        String username = request.getUsername();
+        String password = request.getPassword();
 
         User result = userMapper.findUserByUsername(username);
         if (result == null){
             sqlSession.close();
-            return new ResponseEntity<Object>(new ErrorResponse("无此用户！"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<Object>(new MessageResponse("无此用户！"), HttpStatus.BAD_REQUEST);
         }
 
-        Auth auth = userMapper.findUserAuthByAuthid(result.getAuthid());
-        if (auth==null){
+        if (!PBKDF2.verify(password, result.getPasswd(), result.getSalt())){
             sqlSession.close();
-            return new ResponseEntity<Object>(new ErrorResponse("无此用户！"), HttpStatus.BAD_REQUEST);
-        }
-        if (!PBKDF2.verify(password, auth.getPasswd(), auth.getSalt())){
-            sqlSession.close();
-            return new ResponseEntity<Object>(new ErrorResponse("密码错误！"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<Object>(new MessageResponse("密码错误！"), HttpStatus.BAD_REQUEST);
         }
 
-        String token = JWTToken.getJWT(result.getId(), result.getNickname(), result.getNickname());
+        String token = JWTToken.getJWT(result.getId(), result.getUsername(), result.getNickname());
 
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
@@ -69,30 +67,69 @@ public class UserController {
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public Object register(@RequestBody User user){
+    public Object register(@RequestBody @Valid RegisterRequest request){
+        SqlSession sqlSession;
         try {
-            SqlSession sqlSession = SqlSessionLoader.getSqlSession();
+            sqlSession = SqlSessionLoader.getSqlSession();
         }catch (IOException e){
             System.out.println(e.getMessage());
-            return new ResponseEntity<Object>(new ErrorResponse("服务器错误！"), HttpStatus.valueOf(500));
+            return new ResponseEntity<Object>(new MessageResponse("服务器错误！"), HttpStatus.valueOf(500));
         }
 
+        String salt = PBKDF2.getSalt();
+        String passwd = PBKDF2.getPBKDF2(request.getPassword(), salt);
 
-        return new ResponseEntity<Object>(new Object(), HttpStatus.OK);
+        User user = new User(0, request.getUsername(), request.getNickname(), request.getPhone(),
+                request.getEmail(), salt, passwd);
+
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        int result = userMapper.createUser(user);
+        sqlSession.commit();
+
+        if(result != 1){
+            sqlSession.close();
+            return new ResponseEntity<Object>(new MessageResponse("注册失败！"), HttpStatus.BAD_REQUEST);
+        }
+
+//        System.out.println(user.toString());
+
+        sqlSession.close();
+        return new ResponseEntity<Object>(new MessageResponse("注册成功！"), HttpStatus.OK);
     }
 
 
-    @RequestMapping(value = "/login8", method = RequestMethod.POST)
-    public Object t5(@RequestBody User user){
-        try {
-            SqlSession sqlSession = SqlSessionLoader.getSqlSession();
-        }catch (IOException e){
-            System.out.println(e.getMessage());
-            return new ResponseEntity<Object>(new ErrorResponse("服务器错误！"), HttpStatus.valueOf(500));
+    @RequestMapping(value = "/user/{id}", method = RequestMethod.PUT)
+    public Object updateUserinfo(@RequestBody @Valid User user, @RequestHeader(name = "Authorization") String token, @PathVariable String id){
+        int tid = JWTToken.verify(token).getClaims().get("id").asInt();
+        if (tid != Integer.parseInt(id)){
+            System.out.println(tid);
+            System.out.println(id);
+            return new ResponseEntity<Object>(new MessageResponse("您无权限操作！"), HttpStatus.UNAUTHORIZED);
         }
 
+        SqlSession sqlSession;
+        try {
+            sqlSession = SqlSessionLoader.getSqlSession();
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Object>(new MessageResponse("服务器错误！"), HttpStatus.valueOf(500));
+        }
+        user.setId(tid);
 
-        return new ResponseEntity<Object>(new Object(), HttpStatus.OK);
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        int result = userMapper.updateUser(user);
+        sqlSession.commit();
+
+        if(result != 1){
+            sqlSession.close();
+            return new ResponseEntity<Object>(new MessageResponse("更新失败！"), HttpStatus.BAD_REQUEST);
+        }
+
+//        System.out.println(user.toString());
+
+        sqlSession.close();
+        return new ResponseEntity<Object>(new MessageResponse("更新成功！"), HttpStatus.OK);
+
     }
 
 }
