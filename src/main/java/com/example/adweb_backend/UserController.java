@@ -4,6 +4,7 @@ import com.example.adweb_backend.mybatis.SqlSessionLoader;
 
 import com.example.adweb_backend.mybatis.po.User;
 import com.example.adweb_backend.request.LoginRequest;
+import com.example.adweb_backend.request.ProfileidRequest;
 import com.example.adweb_backend.request.RegisterRequest;
 import com.example.adweb_backend.response.MessageResponse;
 import com.example.adweb_backend.util.JWTToken;
@@ -80,7 +81,7 @@ public class UserController {
         String passwd = PBKDF2.getPBKDF2(request.getPassword(), salt);
 
         User user = new User(0, request.getUsername(), request.getNickname(), request.getPhone(),
-                request.getEmail(), salt, passwd);
+                request.getEmail(), salt, passwd, 0);
 
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
         int result = userMapper.createUser(user);
@@ -186,6 +187,41 @@ public class UserController {
 
         sqlSession.close();
         return new ResponseEntity<Object>(new MessageResponse("用户名可用！"), HttpStatus.OK);
+
+    }
+
+    @RequestMapping(value = "/user/{id}/profile", method = RequestMethod.POST)
+    public Object chooseProfile(@RequestHeader(name = "Authorization") String token, @PathVariable String id, @RequestBody ProfileidRequest request){
+        int tid = JWTToken.verify(token).getClaims().get("id").asInt();
+        if (tid != Integer.parseInt(id)){
+            System.out.println(tid);
+            System.out.println(id);
+            return new ResponseEntity<Object>(new MessageResponse("您无权限操作！"), HttpStatus.UNAUTHORIZED);
+        }
+
+        SqlSession sqlSession;
+        try {
+            sqlSession = SqlSessionLoader.getSqlSession();
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Object>(new MessageResponse("服务器错误！"), HttpStatus.valueOf(500));
+        }
+
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        System.out.println(request.getProfileID());
+        int result = userMapper.chooseProfile(tid, request.getProfileID());
+        System.out.println(result);
+        sqlSession.commit();
+
+        if(result != 1){
+            sqlSession.close();
+            return new ResponseEntity<Object>(new MessageResponse("操作失败！"), HttpStatus.NOT_FOUND);
+        }
+
+//        System.out.println(user.toString());
+
+        sqlSession.close();
+        return new ResponseEntity<Object>(new MessageResponse("操作成功！"), HttpStatus.OK);
 
     }
 

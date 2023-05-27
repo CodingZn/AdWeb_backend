@@ -28,4 +28,6 @@ public class User {
     private String salt;
     @Size(max = 255, min = 1)
     private String passwd;
+
+    private int profileID=0;
 }

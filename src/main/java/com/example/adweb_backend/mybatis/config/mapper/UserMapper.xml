@@ -5,7 +5,7 @@
 <mapper namespace="com.example.adweb_backend.dao.UserMapper">
     <select id="findUserInfoById" parameterType="int"
             resultType="com.example.adweb_backend.mybatis.po.User">
-        select id, username, nickname, phone, email from user where id = #{id}
+        select id, username, nickname, phone, email, profileid from user where id = #{id}
     </select>
     <select id="findUserByUsername" parameterType="java.lang.String"
             resultType="com.example.adweb_backend.mybatis.po.User">
@@ -13,12 +13,16 @@
     </select>
 
     <insert id="createUser" useGeneratedKeys="true" keyProperty="id">
-        insert into user (username, nickname, phone, email, salt, passwd)
-            values (#{username}, #{nickname}, #{phone}, #{email}, #{salt}, #{passwd})
+        insert into user (username, nickname, phone, email, salt, passwd, profileid)
+            values (#{username}, #{nickname}, #{phone}, #{email}, #{salt}, #{passwd}, #{profileid})
     </insert>
 
     <update id="updateUser">
         update user set nickname=#{nickname}, phone=#{phone}, email=#{email}
             where id=#{id};
+    </update>
+
+    <update id="chooseProfile">
+        update user set profileid=#{profileID} where id=#{id}
     </update>
 </mapper>

@@ -12,4 +12,6 @@ public interface UserMapper {
     int createUser(User user);
 
     int updateUser(User user);
+
+    int chooseProfile(int id, int profileID);
 }
