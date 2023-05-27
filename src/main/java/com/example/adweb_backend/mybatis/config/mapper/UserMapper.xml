@@ -5,24 +5,24 @@
 <mapper namespace="com.example.adweb_backend.dao.UserMapper">
     <select id="findUserInfoById" parameterType="int"
             resultType="com.example.adweb_backend.mybatis.po.User">
-        select id, username, nickname, phone, email, profileid from user where id = #{id}
+        select id, username, nickname, phone, email, profileid from web3d.user where id = #{id}
     </select>
     <select id="findUserByUsername" parameterType="java.lang.String"
             resultType="com.example.adweb_backend.mybatis.po.User">
-        select * from user where username = #{username}
+        select * from web3d.user where username = #{username}
     </select>
 
     <insert id="createUser" useGeneratedKeys="true" keyProperty="id">
-        insert into user (username, nickname, phone, email, salt, passwd, profileid)
+        insert into web3d.user (username, nickname, phone, email, salt, passwd, profileid)
             values (#{username}, #{nickname}, #{phone}, #{email}, #{salt}, #{passwd}, #{profileid})
     </insert>
 
     <update id="updateUser">
-        update user set nickname=#{nickname}, phone=#{phone}, email=#{email}
+        update web3d.user set nickname=#{nickname}, phone=#{phone}, email=#{email}
             where id=#{id};
     </update>
 
     <update id="chooseProfile">
-        update user set profileid=#{profileID} where id=#{id}
+        update web3d.user set profileid=#{profileID} where id=#{id}
     </update>
 </mapper>
