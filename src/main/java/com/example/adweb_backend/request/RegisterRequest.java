@@ -13,22 +13,22 @@ import static com.example.adweb_backend.validation.UserValidation.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
-    @NotNull
+    @NotNull(message = NOTNULL_MSG)
     @Pattern(regexp = USERNAME_REGEX, message = USERNAME_MSG)
     private String username;
 
-    @NotNull
+    @NotNull(message = NOTNULL_MSG)
     @Pattern(regexp = NICKNAME_REGEX, message = NICKNAME_MSG)
     private String nickname;
 
-    @NotNull
+    @NotNull(message = NOTNULL_MSG)
     @Pattern(regexp = PHONE_REGEX, message = PHONE_MSG)
     private String phone;
 
     @Pattern(regexp = EMAIL_REGEX, message = EMAIL_MSG)
     private String email;
 
-    @NotNull
+    @NotNull(message = NOTNULL_MSG)
     @Pattern(regexp = PASSWORD_REGEX, message = PASSWORD_MSG)
     private String password;
 }
