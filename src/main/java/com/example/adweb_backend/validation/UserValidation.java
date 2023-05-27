@@ -16,4 +16,6 @@ public class UserValidation {
     public static final String PASSWORD_REGEX = "^[\\w\\W]{6,16}$";
     public static final String PASSWORD_MSG = "密码长度需在6-16位之间";
 
+    public static final String NOTNULL_MSG = "必填项不能为空！";
+
 }

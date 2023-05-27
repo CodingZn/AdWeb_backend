@@ -13,8 +13,8 @@
     </select>
 
     <insert id="createUser" useGeneratedKeys="true" keyProperty="id">
-        insert into web3d.user (username, nickname, phone, email, salt, passwd, profileid)
-            values (#{username}, #{nickname}, #{phone}, #{email}, #{salt}, #{passwd}, #{profileid})
+        insert into web3d.user (username, nickname, phone, email, salt, passwd)
+            values (#{username}, #{nickname}, #{phone}, #{email}, #{salt}, #{passwd})
     </insert>
 
     <update id="updateUser">

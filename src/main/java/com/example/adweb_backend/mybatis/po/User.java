@@ -29,5 +29,5 @@ public class User {
     @Size(max = 255, min = 1)
     private String passwd;
 
-    private int profileID=0;
+    private int profileID;
 }
