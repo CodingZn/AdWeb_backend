@@ -57,7 +57,7 @@ public class UserController {
             return new ResponseEntity<Object>(new MessageResponse("密码错误！"), HttpStatus.BAD_REQUEST);
         }
 
-        String token = JWTToken.getJWT(result.getId(), result.getUsername(), result.getNickname());
+        String token = JWTToken.getJWT(result);
 
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
