@@ -57,7 +57,7 @@ public class UserController {
             return new ResponseEntity<Object>(new MessageResponse("密码错误！"), HttpStatus.BAD_REQUEST);
         }
 
-        String token = JWTToken.getJWT(result.getId(), result.getUsername(), result.getNickname());
+        String token = JWTToken.getJWT(result);
 
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
@@ -208,9 +208,9 @@ public class UserController {
         }
 
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
-        System.out.println(request.getProfileID());
+//        System.out.println(request.getProfileID());
         int result = userMapper.chooseProfile(tid, request.getProfileID());
-        System.out.println(result);
+//        System.out.println(result);
         sqlSession.commit();
 
         if(result != 1){
