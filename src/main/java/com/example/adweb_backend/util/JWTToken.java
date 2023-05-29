@@ -15,10 +15,8 @@ public class JWTToken {
         calendar.add(Calendar.DATE, 30);
 
         return JWT.create()
-                .withClaim("profileID", user.getProfileID())
                 .withClaim("username", user.getUsername())
                 .withClaim("id", user.getId())
-                .withClaim("nickname", user.getNickname())
                 .withExpiresAt(calendar.getTime())
                 .sign(Algorithm.HMAC256(secret));
 
