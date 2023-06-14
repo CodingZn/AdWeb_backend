@@ -1,4 +1,4 @@
-package com.example.adweb_backend;
+package com.example.adweb_backend.controller;
 
 import com.example.adweb_backend.mybatis.SqlSessionLoader;
 
