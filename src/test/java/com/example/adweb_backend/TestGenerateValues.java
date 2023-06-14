@@ -30,4 +30,43 @@ public class TestGenerateValues {
             System.out.println(a.toString());
         }
     }
+
+    @Test
+    void testConcurrent(){
+        DistributionController d = new DistributionController();
+        MyThread t1 = new MyThread("1", d);
+        MyThread t2 = new MyThread("2", d);
+        MyThread t3 = new MyThread("3", d);
+
+        t1.start();
+        t2.start();
+        t3.start();
+
+    }
+}
+
+class MyThread extends Thread {
+    private Thread t;
+    private String threadName;
+    private DistributionController distributionController;
+
+    MyThread(String name, DistributionController distributionController) {
+        threadName = name;
+        this.distributionController = distributionController;
+        System.out.println("Creating " +  threadName );
+    }
+
+    public void run() {
+        System.out.println("Running " +  threadName );
+        distributionController.concurrentDo();
+        System.out.println("Thread " +  threadName + " exiting.");
+    }
+
+    public void start () {
+        System.out.println("Starting " +  threadName );
+        if (t == null) {
+            t = new Thread (this, threadName);
+            t.start ();
+        }
+    }
 }

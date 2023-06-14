@@ -4,11 +4,15 @@ import com.example.adweb_backend.util.JWTToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Random;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("")
 public class DistributionController {
+
+    public static Lock lock = new ReentrantLock();
 
     public static final int WIDTH = 40;
 
@@ -37,6 +41,28 @@ public class DistributionController {
         }
         return result;
     }
+
+    @RequestMapping(value = "/lock", method = RequestMethod.GET)
+    public void concurrentDo(){
+        if(lock.tryLock()){
+            try {
+                System.out.println(Thread.currentThread().getName()+": i get the lock!, sleep 1 sec");
+                Thread.sleep(2000);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            finally {
+                System.out.println(Thread.currentThread().getName()+": i release lock!");
+                lock.unlock();
+            }
+
+        }
+        else{
+            System.out.println(Thread.currentThread().getName()+": it has been locked");
+        }
+    }
+
 
     @RequestMapping(value = "/distribution/normalXY", method = RequestMethod.GET)
     public Object getNormalXYDistribution(@RequestHeader(name = "Authorization") String token,
