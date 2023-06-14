@@ -27,6 +27,17 @@ public class DistributionController {
         return result;
     }
 
+    public static short[][] generateXYUniform(int times){
+        Random r = new Random();
+        short[][] result = new short[WIDTH][WIDTH];
+        for (int i = 0; i < times; i++) {
+            short sx = (short) r.nextInt(WIDTH);
+            short sy = (short) r.nextInt(WIDTH);
+            result[sx][sy] += 1;
+        }
+        return result;
+    }
+
     @RequestMapping(value = "/distribution/normalXY", method = RequestMethod.GET)
     public Object getNormalXYDistribution(@RequestHeader(name = "Authorization") String token,
                                   @RequestParam(name = "miu") double miu,
@@ -39,6 +50,19 @@ public class DistributionController {
             times = 10000;
         return generateXYNormal(miu, sigma, times);
     }
+
+
+    @RequestMapping(value = "/distribution/uniformXY", method = RequestMethod.GET)
+    public Object getUniformXYDistribution(@RequestHeader(name = "Authorization") String token,
+                                          @RequestParam(name = "times") int times
+    ){
+        int tid = JWTToken.verify(token).getClaims().get("id").asInt();
+
+        if (times > 10000)
+            times = 10000;
+        return generateXYUniform(times);
+    }
+
 
 
 }
